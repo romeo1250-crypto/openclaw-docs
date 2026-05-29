@@ -120,19 +120,15 @@ sidebarTitle: "Agent 配置"
 这里最容易误会的是 `bootstrapPromptTruncationWarning`。
 新版默认是 `"always"`：只要工作区说明文件被截断，就每次在系统提示词里放一个简短提醒。
 
-::: tip 给奶奶看的解释
-如果 AGENTS.md 太长，OpenClaw 不会假装自己全看完了。
-它会告诉 Agent：“这份说明被截断了，必要时自己去读原文件。”
-这比静悄悄漏掉后半截规则安全。
-:::
+如果 AGENTS.md 太长，OpenClaw 会提醒 Agent：说明文件被截断了，必要时应再读原文件。
 
-工具结果也有自己的上限。`toolResultMaxChars` 如果不写，OpenClaw 会按模型上下文自动计算：
+工具结果也有自己的上限。`toolResultMaxChars` 不写时，OpenClaw 会按模型上下文自动计算：
 
 - 100K token 以下：约 16000 字符
 - 100K+ token：约 32000 字符
 - 200K+ token：约 64000 字符
 
-普通用户不要急着手动调这个值。需要确认实际生效值时运行：
+普通用户建议保持未设置。需要确认实际生效值时运行：
 
 ```bash
 openclaw doctor --deep
@@ -181,11 +177,7 @@ openclaw doctor --deep
 
 ## Runtime 策略放在哪里
 
-新版规则很重要：
-
-```text
-Runtime 策略属于 provider 或 model，不属于整个 agents.defaults。
-```
+新版规则：Runtime 策略属于 provider 或 model，不属于整个 `agents.defaults`。
 
 推荐写法：
 
@@ -211,7 +203,7 @@ Runtime 策略属于 provider 或 model，不属于整个 agents.defaults。
 }
 ```
 
-旧写法不要再依赖：
+旧写法不要再用：
 
 ```json5
 {
@@ -232,7 +224,7 @@ Runtime 策略属于 provider 或 model，不属于整个 agents.defaults。
 openclaw doctor --fix
 ```
 
-它会尽量清掉旧值，避免你以为配置生效了，实际上没有生效。
+它会尽量清掉旧值，避免配置看起来存在但实际不生效。
 
 常见 runtime id：
 

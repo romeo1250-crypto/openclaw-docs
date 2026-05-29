@@ -424,6 +424,43 @@ Token 解析是账户感知的。配置 Token 值优先于环境变量回退。`
 
 参见[斜杠命令](/tutorials/tools/slash-commands)了解命令目录和行为。
 
+## 流式预览
+
+Discord 可以在最终回复出来前，先编辑一条临时草稿消息显示进度。
+
+```json5
+{
+  channels: {
+    discord: {
+      streaming: {
+        mode: "progress",
+        progress: {
+          label: "auto",
+          maxLines: 8,
+          maxLineChars: 120,
+          toolProgress: true,
+          commentary: false,
+        },
+      },
+    },
+  },
+}
+```
+
+关键字段：
+
+| 字段 | 作用 |
+|------|------|
+| `mode: "off"` | 关闭预览 |
+| `mode: "partial"` | 随 token 更新一条预览消息 |
+| `mode: "block"` | 按块发送草稿 |
+| `mode: "progress"` | 默认模式，用一条临时消息显示工具进度 |
+| `progress.toolProgress` | 是否把工具进度写进临时草稿，默认 `true` |
+| `progress.commentary` | 是否把 assistant 的前置说明也写进临时草稿，默认 `false` |
+| `progress.commandText` | 工具命令细节显示方式：`raw` 或 `status` |
+
+`progress.commentary` 只影响临时草稿，不改变最终回复。默认关闭，是为了避免把模型的过程性开场白也显示给 Discord 用户。
+
 ## 功能详情
 
 

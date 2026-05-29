@@ -98,9 +98,7 @@ openclaw plugins doctor
 openclaw plugins list
 ```
 
-::: tip 给奶奶看的解释
-更新像给家里换总电闸。`status: "ok"` 说明总电闸换好了；`postUpdate.plugins.status: "warning"` 说明某个插座接触不好。先修插座，不要重复拆总电闸。
-:::
+简单理解：顶层 `status: "ok"` 表示主程序更新成功；`postUpdate.plugins.status: "warning"` 表示插件需要处理，但不代表主程序失败。
 
 如果看到 `postUpdate.plugins.status: "error"`，情况更严重一些：
 OpenClaw 已经发现启用中的插件不完整、`package.json` 无法读取、入口文件缺失，或者配置快照无效。

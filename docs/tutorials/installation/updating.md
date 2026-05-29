@@ -150,8 +150,6 @@ openclaw update --dry-run
 2. npm/pnpm 全局安装：Gateway 先启动一个独立 helper，然后自己退出。
    helper 在 Gateway 进程外执行 `openclaw update --yes --json`。
 
-这句话有点绕，换成家常话就是：
-
 ```text
 旧 Gateway 不要一边运行一边拆自己的安装目录。
 先交给外面的 helper，等 helper 换好包、重启服务、确认健康以后，再报告结果。
@@ -203,8 +201,6 @@ openclaw health
 ## 更新后插件也要对齐
 
 新版 `openclaw update` 不只更新主程序，还会在重启前做一次 **post-core convergence**。
-名字很技术，但意思很朴素：
-
 ```text
 主程序更新好了，也要确认启用中的插件文件还在、package.json 能读、入口文件存在。
 确认通过以后，才允许 Gateway 带着这套插件重启。
