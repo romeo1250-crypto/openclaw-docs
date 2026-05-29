@@ -38,9 +38,7 @@ openclaw doctor
 
 ## 内置提供商（pi-ai 目录）
 
-OpenClaw 附带 pi-ai 目录。这些提供商 **不需要** `models.providers` 配置；只需设置认证 + 选择模型。
-
-这句话翻成人话就是：下面这些常见模型来源，OpenClaw 已经认识。你只需要给钥匙，也就是 API Key 或登录授权。
+OpenClaw 已经认识这些常见模型来源。你只需要配置认证，再选择模型。
 
 ### OpenAI
 
@@ -162,14 +160,11 @@ Moonshot 使用 OpenAI 兼容端点，因此将其配置为自定义提供商：
 
 Kimi K2 模型 ID：
 
-{/_moonshot-kimi-k2-model-refs:start_/ && null}
-
 - `moonshot/kimi-k2.5`
 - `moonshot/kimi-k2-0905-preview`
 - `moonshot/kimi-k2-turbo-preview`
 - `moonshot/kimi-k2-thinking`
 - `moonshot/kimi-k2-thinking-turbo`
-  {/_moonshot-kimi-k2-model-refs:end_/ && null}
 
 ```json5
 {

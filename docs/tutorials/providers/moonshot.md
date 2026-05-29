@@ -10,14 +10,11 @@ Moonshot 提供具有 OpenAI 兼容端点的 Kimi API。配置提供商并将默
 
 当前 Kimi K2 模型 ID：
 
-{/_moonshot-kimi-k2-ids:start_/ && null}
-
 - `kimi-k2.5`
 - `kimi-k2-0905-preview`
 - `kimi-k2-turbo-preview`
 - `kimi-k2-thinking`
 - `kimi-k2-thinking-turbo`
-  {/_moonshot-kimi-k2-ids:end_/ && null}
 
 ```bash
 openclaw onboard --auth-choice moonshot-api-key

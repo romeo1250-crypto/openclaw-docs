@@ -85,11 +85,10 @@ Cron 说“什么时候做”。
 一个常见组合：
 
 ```bash
-openclaw cron add \
+openclaw cron create "0 16 * * 5" \
+  "按照 AGENTS.md 中的每周项目周报长期指令执行。" \
   --name weekly-report \
-  --cron "0 16 * * 5" \
-  --tz Asia/Shanghai \
-  --message "按照 AGENTS.md 中的每周项目周报长期指令执行。"
+  --tz Asia/Shanghai
 ```
 
 这样 Cron 到点叫醒 Agent，Agent 再按长期指令执行。
@@ -108,4 +107,3 @@ openclaw cron add \
 - 验证要求：做完怎么证明
 
 最关键的是最后一条：**不要只说“我会做”，要执行、验证、报告。**
-

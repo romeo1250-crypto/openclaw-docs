@@ -1,308 +1,205 @@
 ---
 title: "Cron 定时任务"
 sidebarTitle: "Cron 定时任务"
-description: "OpenClaw 自动化：Cron 定时任务（Cron Jobs）。Cron 让你的 Agent 在指定时间自动执行，无需人工干预。使用标准的 cron 表达式（Cron Expression）精确…"
+description: "OpenClaw 自动化：Cron 定时任务。用 Gateway 内置调度器在指定时间唤醒 Agent，也可以把结果发到聊天或 Webhook。"
 ---
 
-# Cron 定时任务（Cron Jobs）
+# Cron 定时任务
 
-Cron 让你的 Agent 在指定时间自动执行，无需人工干预。使用标准的 cron 表达式（Cron Expression）精确控制执行时间，从"每天早 9 点发日报"到"每月第一天做汇总"，都能轻松实现。
+Cron 是 OpenClaw Gateway 内置的定时器。
+它负责“到点叫醒 Agent”，适合日报、巡检、提醒、定期汇总。
 
-::: warning Breaking Change（2026.3.8+）
-Cron 任务不再支持通过「即时 Agent」发送通知，也不再回退到主会话摘要。
-
-如果你之前依赖这一行为，请运行以下迁移命令：
+第一次使用记住这个格式：
 
 ```bash
-openclaw doctor --fix
+openclaw cron create "<时间>" "<要 Agent 做什么>" --name "<任务名>"
 ```
-
-该命令会处理旧版 cron 存储，以及旧版通知 / webhook 投递元数据。
-:::
 
 ---
 
-## 快速上手（5 分钟搞定）
+## 先做一个最小任务
 
-**第一步：在配置文件中添加 Cron 任务**
-
-打开 OpenClaw 配置文件，添加以下内容：
-
-```json5
-{
-  cron: {
-    jobs: [
-      {
-        // 标准 5 段 cron 表达式：分 时 日 月 周
-        schedule: "0 9 * * 1-5",  // 工作日（周一到周五）早上 9 点
-        agent: "daily-summary",   // 要触发的 Agent 名称
-        message: "生成今日工作总结，包括待办事项和昨日进展"
-      }
-    ]
-  }
-}
-```
-
-**第二步：确认 Agent 存在**
+创建一个一次性提醒：
 
 ```bash
-openclaw agents list
+openclaw cron create "2026-02-01T16:00:00Z" \
+  "Reminder: check the cron docs draft" \
+  --name "Reminder" \
+  --session main \
+  --wake now
 ```
 
-**第三步：验证 Cron 任务配置正确**
+看任务是否创建成功：
 
 ```bash
 openclaw cron list
 ```
 
-输出示例：
-```text
-NAME           SCHEDULE        NEXT RUN              AGENT
-daily-summary  0 9 * * 1-5    2026-02-23 09:00:00   daily-summary
-```
-
-**第四步：手动触发测试（无需等到指定时间）**
+手动跑一次，不用等到时间：
 
 ```bash
-openclaw cron run daily-summary
+openclaw cron run <jobId> --wait
 ```
 
-::: tip 验证 cron 表达式
-不确定 cron 表达式是否正确？可以用在线工具验证：[crontab.guru](https://crontab.guru) 是一个常用的 cron 表达式解析器。
+`<jobId>` 从 `openclaw cron list` 里复制。
+
+---
+
+## 每天、每周、每隔多久
+
+`cron create` 的第一个位置参数是时间。常用写法：
+
+| 写法 | 意思 |
+|------|------|
+| `"0 7 * * *"` | 每天 7 点 |
+| `"0 9 * * 1-5"` | 工作日 9 点 |
+| `"every 1h"` | 每小时 |
+| `"20m"` | 每 20 分钟 |
+| `"2026-02-01T16:00:00Z"` | 指定 UTC 时间执行一次 |
+
+第二个位置参数是给 Agent 的任务说明：
+
+```bash
+openclaw cron create "0 7 * * *" \
+  "Summarize overnight updates." \
+  --name "Morning brief" \
+  --tz "America/Los_Angeles" \
+  --session isolated
+```
+
+::: tip 时区别靠猜
+服务器不一定在你的城市。需要固定本地时间时，显式写 `--tz`。
+中国大陆常用 `--tz "Asia/Shanghai"`。
 :::
 
 ---
 
-## 技术说明
+## 会话怎么选
 
-### Cron 表达式（Cron Expression）格式
+`--session` 决定任务醒来时用哪个上下文。
 
-标准 5 段格式：
+| 值 | 适合场景 |
+|----|----------|
+| `main` | 复用主会话，适合持续跟踪同一件事 |
+| `isolated` | 每次新会话，适合日报、巡检、批处理 |
+| `current` | 从当前聊天创建提醒时使用当前会话 |
+| `session:<id>` | 指定某个固定会话 |
 
-```text
-┌─────── 分钟（0-59）
-│ ┌───── 小时（0-23）
-│ │ ┌─── 日期（1-31）
-│ │ │ ┌─ 月份（1-12）
-│ │ │ │ └─ 星期（0-7，0 和 7 都代表周日）
-│ │ │ │ │
-* * * * *
-```
-
-常用示例：
-
-| 表达式 | 含义 |
-|--------|------|
-| `0 9 * * 1-5` | 工作日早上 9 点 |
-| `0 18 * * 5` | 每周五下午 6 点 |
-| `0 */2 * * *` | 每 2 小时执行一次 |
-| `30 8 1 * *` | 每月 1 日早上 8:30 |
-| `0 0 * * *` | 每天午夜 |
-| `*/15 * * * *` | 每 15 分钟 |
+不确定时，用 `isolated`，更干净。
 
 ---
 
-### 执行模式（Execution Mode）
+## 把结果发到聊天
 
-Cron 任务支持两种执行模式：
-
-#### 主会话模式（Main Session）
-
-复用 Agent 已有的会话，保持上下文连续性。适合需要记忆前次状态的任务。
-
-```json5
-{
-  cron: {
-    jobs: [
-      {
-        schedule: "0 9 * * 1-5",
-        agent: "monitor-agent",
-        message: "检查昨日未处理的告警",
-        // 默认为主会话模式，不需要额外配置
-        isolated: false
-      }
-    ]
-  }
-}
-```
-
-#### 隔离执行模式（Isolated）
-
-每次 Cron 触发时创建全新会话，完全独立，互不影响。适合独立的批量处理任务。
-
-```json5
-{
-  cron: {
-    jobs: [
-      {
-        schedule: "0 2 * * *",
-        agent: "report-agent",
-        message: "生成昨日完整数据报告",
-        // 隔离模式：每次使用新会话
-        isolated: true
-      }
-    ]
-  }
-}
-```
-
-::: tip 如何选择执行模式？
-- 需要 Agent 记住上次状态 → 主会话模式
-- 每次任务完全独立、互不影响 → 隔离执行模式
-- 不确定时，推荐隔离执行模式，更安全可预期
-:::
-
----
-
-### 模型覆盖（Model Override）
-
-可以为 Cron 任务指定不同的模型，覆盖 Agent 默认配置：
-
-```json5
-{
-  cron: {
-    jobs: [
-      {
-        schedule: "0 2 * * *",
-        agent: "analysis-agent",
-        message: "执行深度数据分析",
-        // 为这个 Cron 任务单独指定更强的模型
-        model: "claude-opus-4-6",
-        // 启用扩展思考（Extended Thinking）
-        thinking: {
-          enabled: true,
-          budget: 10000
-        }
-      }
-    ]
-  }
-}
-```
-
----
-
-### 投递配置（Delivery）
-
-Cron 任务执行结果可以发送到指定通道：
-
-```json5
-{
-  cron: {
-    jobs: [
-      {
-        schedule: "0 9 * * 1-5",
-        agent: "daily-summary",
-        message: "生成今日工作总结",
-        // 执行结果投递到 Slack 通道
-        delivery: {
-          channel: "slack",
-          target: "#daily-reports"
-        }
-      }
-    ]
-  }
-}
-```
-
----
-
-### CLI 命令
+让任务结束后把最终结果发到 Slack：
 
 ```bash
-# 查看所有 Cron 任务及下次执行时间
+openclaw cron create "0 7 * * *" \
+  "Summarize overnight updates." \
+  --name "Morning brief" \
+  --session isolated \
+  --announce \
+  --channel slack \
+  --to "channel:C1234567890"
+```
+
+常见投递参数：
+
+| 参数 | 作用 |
+|------|------|
+| `--announce` | 让 runner 把最终回复发出去 |
+| `--channel <name>` | 投递通道，例如 `slack`、`telegram` |
+| `--to <target>` | 投递目标，例如 Slack channel ID |
+| `--no-deliver` | 不做 runner fallback 投递 |
+
+如果任务本身能用 `message` 工具发消息，`--announce` 是兜底投递，不是唯一投递路径。
+
+---
+
+## 把结果发到 Webhook
+
+如果你要把 cron 结果交给外部系统，用 `--webhook`：
+
+```bash
+openclaw cron create "0 18 * * 1-5" \
+  "Summarize today's deploys as JSON." \
+  --name "Deploy digest" \
+  --webhook "https://example.invalid/openclaw/cron"
+```
+
+`--webhook` 会在任务完成后 POST 运行结果。
+
+不要把 `--webhook` 和聊天投递参数混用：
+
+- 不要同时用 `--announce`
+- 不要同时用 `--channel`
+- 不要同时用 `--to`
+- 不要同时用 `--thread-id`
+- 不要同时用 `--account`
+
+Webhook 是给系统收结果；聊天投递是给人看结果。两条路选一条。
+
+---
+
+## 多 Agent 怎么指定
+
+如果你有多个 Agent，用 `--agent`：
+
+```bash
+openclaw cron create "0 6 * * *" \
+  "Check ops queue" \
+  --name "Ops sweep" \
+  --session isolated \
+  --agent ops
+```
+
+清掉任务上的 Agent 绑定：
+
+```bash
+openclaw cron edit <jobId> --clear-agent
+```
+
+---
+
+## 常用命令
+
+```bash
 openclaw cron list
-
-# 手动触发指定 Cron 任务（立即执行，不等待计划时间）
-openclaw cron run <job-name>
-
-# 查看 Cron 执行历史
-openclaw cron history
-
-# 暂停指定 Cron 任务
-openclaw cron pause <job-name>
-
-# 恢复已暂停的 Cron 任务
-openclaw cron resume <job-name>
+openclaw cron show <jobId>
+openclaw cron runs --id <jobId>
+openclaw cron run <jobId> --wait
+openclaw cron edit <jobId> --name "New name"
+openclaw cron remove <jobId>
 ```
+
+`openclaw cron create` 是 `openclaw cron add` 的别名。
+新任务建议用 `create`，因为它更像一句自然语言命令：先写时间，再写任务。
 
 ---
 
-### 时区（Timezone）设置
+## 没按时执行怎么办
 
-::: warning 时区问题是 Cron 常见踩坑点
-默认情况下，Cron 使用服务器系统时区。如果服务器在境外，实际触发时间可能与预期不符。
-:::
-
-在配置中显式指定时区：
-
-```json5
-{
-  cron: {
-    // 为所有 Cron 任务设置时区
-    timezone: "Asia/Shanghai",
-    jobs: [
-      {
-        schedule: "0 9 * * 1-5",
-        agent: "daily-summary",
-        message: "生成今日工作总结"
-        // 也可以在单个任务中覆盖时区
-        // timezone: "America/New_York"
-      }
-    ]
-  }
-}
-```
-
-常用时区标识：
-
-| 时区 | 标识符 |
-|------|--------|
-| 北京时间（UTC+8）| `Asia/Shanghai` |
-| 东京时间（UTC+9）| `Asia/Tokyo` |
-| 美东时间 | `America/New_York` |
-| 美西时间 | `America/Los_Angeles` |
-| UTC | `UTC` |
-
----
-
-### 存储和历史
-
-Cron 执行历史保存在本地：
-
-```text
-~/.openclaw/cron/
-├── history.json     # 执行历史记录
-└── state.json       # 当前任务状态
-```
-
-查看最近的执行记录：
-
-```bash
-openclaw cron history --limit 20
-```
-
----
-
-### 故障排查
-
-::: details Cron 任务没有在预期时间执行
-
-1. 确认 Gateway 正在运行：`openclaw gateway status`
-2. 检查时区配置是否正确：`openclaw cron list` 查看"NEXT RUN"时间
-3. 验证 cron 表达式：用 `crontab.guru` 验证
-4. 查看日志：`openclaw logs --filter cron`
-:::
-
-::: details 手动触发成功但定时不触发
-
-可能原因：Gateway 未启动或意外退出。检查 Gateway 进程：
+按顺序查：
 
 ```bash
 openclaw gateway status
-openclaw onboard --install-daemon  # 如果还没有安装后台服务
+openclaw cron list
+openclaw cron runs --id <jobId>
+openclaw logs --follow
 ```
-:::
+
+常见原因：
+
+- Gateway 没在运行。
+- 时区不是你以为的时区。
+- 模型认证失败。
+- 目标聊天通道没有权限。
+- Webhook 地址不可达或返回错误。
 
 ---
 
-_下一步：[Cron vs Heartbeat 对比](./cron-vs-heartbeat) | [Webhook 外部触发](./webhook) | [故障排查](./troubleshooting)_
+## 继续阅读
+
+- [openclaw cron](/tutorials/cli/cron)
+- [Cron vs Heartbeat](/tutorials/automation/cron-vs-heartbeat)
+- [自动化故障排查](/tutorials/automation/troubleshooting)
