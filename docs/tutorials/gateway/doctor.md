@@ -197,17 +197,23 @@ Doctor 会：
 新版 Codex 原生运行时使用的是：
 
 ```text
-openai/* 模型引用 + agentRuntime.id: "codex"
+openai/* 模型引用 + 默认 Codex runtime
 ```
 
-旧配置里可能还留着 `openai-codex/*`。这很容易让人以为自己在走原生 Codex harness，实际却可能仍走 PI 的 OpenAI 路径。
+旧配置里可能还留着 `openai-codex/*`。这很容易让人把“模型路线”和“Codex 登录资料”混在一起。
+新配置优先写 `openai/gpt-5.5`；OpenAI Agent turn 默认会走 Codex harness。
 
 `openclaw doctor --fix` 现在会尝试修复这些旧路由：
 
 - 把 `openai-codex/gpt-*` 改成 `openai/gpt-*`。
-- 当 Codex 插件已安装、启用、提供 `codex` harness，并且 OAuth 可用时，选择 `agentRuntime.id: "codex"`。
-- 否则选择 `agentRuntime.id: "pi"`，避免配置看起来能用但运行时找不到 harness。
+- 清理旧的 whole-agent runtime key 和会话 runtime pin。
+- 只在 provider/model 级别需要显式运行时策略时，保留 `agentRuntime.id: "codex"` 或 `agentRuntime.id: "openclaw"`。
 - 同步修复默认模型、fallback、heartbeat、subagent、compaction、hooks、通道模型覆盖和持久化会话里的旧路由状态。
+
+::: tip 现在不要再写 `agentRuntime.id: "pi"`
+`pi` 只是旧版兼容别名。新配置如果必须指定 OpenClaw 内置运行时，请写 `openclaw`。
+多数 OpenAI Agent 配置不需要手动写 runtime。
+:::
 
 如果你以前手动写过 Codex 模型配置，升级后优先跑：
 

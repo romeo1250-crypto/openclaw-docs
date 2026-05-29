@@ -31,6 +31,8 @@ curl -fsSL https://openclaw.ai/install.sh | bash
   安装脚本会**仅在**仓库是干净状态时执行 `git pull --rebase`。
 
 - 对于**全局安装**，脚本底层使用 `npm install -g openclaw@latest`。
+- 官网安装脚本会在安装 OpenClaw 包时清理 npm 新鲜度过滤（例如 `min-release-age`）。
+  如果你手动运行 npm，仍然会遵守你自己电脑上的 npm 策略。
 - 历史说明：如果你的旧环境里仍有 `clawdbot` 命令，它只是兼容性垫片；新文档和新命令统一使用 `openclaw`。
 
 ---
@@ -69,6 +71,8 @@ openclaw update --channel stable
 ```
 
 使用 `--tag <dist-tag|version>` 进行一次性安装标签/版本。
+如果传的是 GitHub 或 git 源码规格，新版 updater 会先打成临时 tarball，
+再走分阶段全局 npm 安装。这样做是为了先验证包内容，再替换正在使用的全局安装。
 
 参见 [开发通道](/tutorials/installation/development-channels) 了解通道语义和发行说明。
 
@@ -107,6 +111,20 @@ openclaw update
 
 如果你通过 **npm/pnpm** 安装（无 git 元数据），`openclaw update` 会尝试通过你的包管理器更新。如果无法检测安装方式，请使用"更新（全局安装）"。
 
+::: info Nix 用户不要直接改安装目录
+如果环境里设置了 `OPENCLAW_NIX_MODE=1`，说明这个 OpenClaw 是由 Nix 管理的。
+这时会禁用真正会改文件的 `openclaw update`，你应该更新 Nix flake/input。
+
+还能安全运行的是：
+
+```bash
+openclaw update status
+openclaw update --dry-run
+```
+
+它们只读，不会修改安装。
+:::
+
 ### dev 通道 fetch 失败时
 
 最新版 `openclaw update` 在 dev 通道下会更保守：如果 `git fetch --all --prune --tags` 失败，会立刻停止更新，不再继续 preflight、rebase 或 build。
@@ -126,11 +144,26 @@ openclaw update --dry-run
 
 ## 更新（控制面板 / RPC）
 
-控制面板有**更新并重启**功能（RPC：`update.run`）。它：
+控制面板有**更新并重启**功能（RPC：`update.run`）。它现在分两种情况：
 
-1. 运行与 `openclaw update` 相同的源码更新流程（仅限 git checkout）。
-2. 写入带有结构化报告（stdout/stderr 尾部）的重启标记文件。
-3. 重启网关并向最后一个活跃会话（Session）发送报告。
+1. 源码 checkout：运行与 `openclaw update` 相同的源码更新流程。
+2. npm/pnpm 全局安装：Gateway 先启动一个独立 helper，然后自己退出。
+   helper 在 Gateway 进程外执行 `openclaw update --yes --json`。
+
+这句话有点绕，换成家常话就是：
+
+```text
+旧 Gateway 不要一边运行一边拆自己的安装目录。
+先交给外面的 helper，等 helper 换好包、重启服务、确认健康以后，再报告结果。
+```
+
+如果控制面板返回：
+
+| 返回 | 意思 | 你该做什么 |
+|------|------|------------|
+| `managed-service-handoff-started` | 已经把更新交给外部 helper | 等待重启完成，再跑 `openclaw status` |
+| `managed-service-handoff-unavailable` | 没找到安全的服务边界 | 按返回里的 `handoff.command` 到终端手动运行 |
+| `managed-service-handoff-failed` | helper 启动失败 | 看日志，必要时终端运行 `openclaw update` |
 
 如果变基失败，网关会中止并在不应用更新的情况下重启。
 
@@ -163,6 +196,38 @@ openclaw health
 - 如果你从仓库 checkout 运行且没有全局安装，使用 `pnpm openclaw ...` 执行 CLI 命令。
 - 如果你直接从 TypeScript 运行（`pnpm openclaw ...`），通常不需要重新构建，但**配置迁移仍然适用** → 运行 doctor。
 - 在全局安装和 git 安装之间切换很容易：安装另一种方式，然后运行 `openclaw doctor`，网关服务入口点就会被重写为当前安装。
+- dev 通道需要临时安装 pnpm 时，新版 updater 会优先用 corepack；如果还不行，再临时安装 `pnpm@11`。
+
+---
+
+## 更新后插件也要对齐
+
+新版 `openclaw update` 不只更新主程序，还会在重启前做一次 **post-core convergence**。
+名字很技术，但意思很朴素：
+
+```text
+主程序更新好了，也要确认启用中的插件文件还在、package.json 能读、入口文件存在。
+确认通过以后，才允许 Gateway 带着这套插件重启。
+```
+
+你可能在 `openclaw update --json` 里看到：
+
+| 字段 | 意思 | 是否代表主程序失败 |
+|------|------|--------------------|
+| `postUpdate.plugins.status: "ok"` | 插件也同步好了 | 否 |
+| `postUpdate.plugins.status: "warning"` | 主程序好了，但某个托管插件需要修 | 否 |
+| `postUpdate.plugins.status: "error"` | 启用插件没有通过重启前校验 | 是，Gateway 不会用未验证插件重启 |
+
+beta 通道还有一个常见 warning：某个插件没有 beta 版本，OpenClaw 会回退到记录的默认/最新版。
+这不会让核心更新失败，但你应该读 warning，确认是不是你预期的插件版本。
+
+遇到插件 warning，先按这个顺序修：
+
+```bash
+openclaw doctor --fix
+openclaw plugins inspect <插件ID> --runtime --json
+openclaw plugins doctor
+```
 
 ---
 

@@ -18,7 +18,7 @@ description: "OpenClaw 快速入门：命令行向导安装指南。推荐通过
 
 - **一个 AI API 密钥或可登录的模型账号** — [还没有？先看准备事项](./getting-started#先准备这-3-样东西)
 
-Node.js 是必需的运行环境（**推荐 v24，也支持 v22.14+**），安装方式见下方。
+Node.js 是必需的运行环境（**推荐 v24，也支持 v22.19+**），安装方式见下方。
 
 ---
 
@@ -51,9 +51,9 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 
 ---
 
-### 方式 B：手动安装（已有 Node.js 24 或 Node.js 22.14+）
+### 方式 B：手动安装（已有 Node.js 24 或 Node.js 22.19+）
 
-如果你已经安装了 Node.js 24，或至少 Node.js 22.14+，可以直接用 npm 安装：
+如果你已经安装了 Node.js 24，或至少 Node.js 22.19+，可以直接用 npm 安装：
 
 验证 Node.js 版本（在终端里输入）：
 
@@ -61,7 +61,7 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 node --version
 ```
 
-如果显示 `v24.x.x` 最佳；`v22.14.x` 以上也可使用。如果版本低于 22.14，请先升级 Node.js 或使用上面的方式 A（会自动处理）。
+如果显示 `v24.x.x` 最佳；`v22.19.x` 以上也可使用。如果版本低于 22.19，请先升级 Node.js 或使用上面的方式 A（会自动处理）。
 
 在终端里运行以下命令安装 OpenClaw：
 

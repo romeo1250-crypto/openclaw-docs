@@ -25,7 +25,7 @@ description: "OpenClaw 快速入门：用最少步骤安装 OpenClaw、完成 on
    macOS、Linux、Windows 都可以。Windows 可以直接用，但完整体验更推荐 WSL2。
 
 2. Node.js
-   推荐 **Node 24**。如果你已经是 **Node 22.14+**，也可以继续用。
+   推荐 **Node 24**。如果你已经是 **Node 22.19+**，也可以继续用。
 
 3. 一个 AI 模型账号或 API key
    新手可以先用你已经有账号的提供商。OpenClaw 支持 OpenAI、Anthropic、Google、Ollama、本地或兼容 OpenAI API 的服务。
@@ -39,7 +39,7 @@ node --version
 ```
 
 如果显示 `v24.x.x`，很好。
-如果显示 `v22.14.0` 或更高，也可以。
+如果显示 `v22.19.0` 或更高，也可以。
 如果提示找不到 `node`，先看[安装 Node.js](/tutorials/installation/node)。
 
 ---

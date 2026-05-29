@@ -50,7 +50,7 @@ bun run vitest run
 Bun 可能会阻止依赖的生命周期脚本，除非显式信任（`bun pm untrusted` / `bun pm trust`）。
 对于本仓库，常被阻止的脚本不是必需的：
 
-- `@whiskeysockets/baileys` `preinstall`：检查 Node 主版本 >= 20（OpenClaw 当前推荐 Node 24，也支持 Node 22.14+）。
+- `@whiskeysockets/baileys` `preinstall`：检查 Node 主版本 >= 20（OpenClaw 当前推荐 Node 24，也支持 Node 22.19+）。
 - `protobufjs` `postinstall`：发出关于不兼容版本方案的警告（无构建产物）。
 
 如果你遇到需要这些脚本的实际运行时问题，请显式信任它们：

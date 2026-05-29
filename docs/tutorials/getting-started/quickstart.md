@@ -25,7 +25,7 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 ```
 
 ::: info 前提条件
-推荐使用 Node.js 24；如果你已经是 Node.js 22.14+，也可以继续用。
+推荐使用 Node.js 24；如果你已经是 Node.js 22.19+，也可以继续用。
 安装脚本通常会帮你处理 Node.js。想手动检查，可以运行 `node -v`，详见[安装 Node.js](/tutorials/installation/node)。
 :::
 

@@ -573,13 +573,16 @@ exec ssh -T gateway-host imsg "$@"
 
 ### `agents.defaults.workspace`
 
-默认值：`~/.openclaw/workspace`。
+默认值：如果设置了 `OPENCLAW_WORKSPACE_DIR`，使用它；否则使用 `~/.openclaw/workspace`。
 
 ```json5
 {
   agents: { defaults: { workspace: "~/.openclaw/workspace" } },
 }
 ```
+
+显式写在配置里的 `agents.defaults.workspace` 优先级最高。
+如果你在 Docker、Railway 或 VPS 上用环境变量挂载工作区，不必再把同一路径写进配置文件。
 
 ### `agents.defaults.repoRoot`
 
@@ -603,23 +606,95 @@ exec ssh -T gateway-host imsg "$@"
 
 ### `agents.defaults.bootstrapMaxChars`
 
-每个工作区引导文件截断前的最大字符数。默认值：`20000`。
+每个工作区引导文件截断前的最大字符数。默认值：`12000`。
 
 ```json5
 {
-  agents: { defaults: { bootstrapMaxChars: 20000 } },
+  agents: { defaults: { bootstrapMaxChars: 12000 } },
 }
 ```
 
 ### `agents.defaults.bootstrapTotalMaxChars`
 
-所有工作区引导文件注入的最大总字符数。默认值：`24000`。
+所有工作区引导文件注入的最大总字符数。默认值：`60000`。
 
 ```json5
 {
-  agents: { defaults: { bootstrapTotalMaxChars: 24000 } },
+  agents: { defaults: { bootstrapTotalMaxChars: 60000 } },
 }
 ```
+
+单个 Agent 可以用 `agents.list[].bootstrapMaxChars` 和
+`agents.list[].bootstrapTotalMaxChars` 覆盖默认值。
+
+### `agents.defaults.contextInjection`
+
+控制工作区说明文件什么时候注入系统提示词。默认值：`"always"`。
+
+```json5
+{
+  agents: { defaults: { contextInjection: "continuation-skip" } },
+}
+```
+
+可选值：
+
+| 值 | 说明 |
+|----|------|
+| `always` | 每次 Agent 运行都注入 |
+| `continuation-skip` | 安全续写时跳过，减少上下文 |
+| `never` | 完全不注入，适合自定义 runtime |
+
+单个 Agent 可以用 `agents.list[].contextInjection` 覆盖。
+
+### `agents.defaults.bootstrapPromptTruncationWarning`
+
+工作区说明文件被截断时，是否在系统提示词里提醒 Agent。默认值：`"always"`。
+
+```json5
+{
+  agents: { defaults: { bootstrapPromptTruncationWarning: "always" } },
+}
+```
+
+可选值：
+
+| 值 | 说明 |
+|----|------|
+| `off` | 不提醒 |
+| `once` | 同一类截断只提醒一次 |
+| `always` | 每次截断都提醒 |
+
+### `agents.defaults.contextLimits.toolResultMaxChars`
+
+高级字段：限制工具结果保留到上下文里的字符数。
+
+如果不写，OpenClaw 会自动按模型上下文估算：
+
+- 100K token 以下：约 16000 字符
+- 100K+ token：约 32000 字符
+- 200K+ token：约 64000 字符
+
+有效值还会受模型上下文窗口约 30% 的上限约束。实际值可用：
+
+```bash
+openclaw doctor --deep
+```
+
+普通用户建议保持未设置。
+
+### `agents.defaults.imageQuality`
+
+图片工具和媒体图片进入模型前的压缩/清晰度策略。默认值：`"auto"`。
+
+```json5
+{
+  agents: { defaults: { imageQuality: "auto" } },
+}
+```
+
+可选值：`auto`、`efficient`、`balanced`、`high`。
+新手保持 `auto`。
 
 ### `agents.defaults.userTimezone`
 
@@ -1584,7 +1659,7 @@ Talk 模式（macOS/iOS/Android、浏览器 realtime、Gateway relay）的默认
 
 ## 自定义提供商和基础 URL
 
-OpenClaw 使用 pi-coding-agent 模型目录。通过配置中的 `models.providers` 或 `~/.openclaw/agents/<agentId>/agent/models.json` 添加自定义提供商。
+OpenClaw 带有内置模型目录。通过配置中的 `models.providers` 或 `~/.openclaw/agents/<agentId>/agent/models.json` 添加自定义提供商。
 
 ```json5
 {
@@ -1614,6 +1689,18 @@ OpenClaw 使用 pi-coding-agent 模型目录。通过配置中的 `models.provid
 
 - 使用 `authHeader: true` + `headers` 满足自定义认证需求。
 - 使用 `OPENCLAW_AGENT_DIR`（或 `PI_CODING_AGENT_DIR`）覆盖代理配置根目录。
+- `models.providers.<provider>.agentRuntime` 可以设置 provider 级 runtime 策略。
+  例如 OpenAI 默认会走 Codex harness，自定义 OpenAI 兼容服务通常可以显式写 `agentRuntime: { id: "openclaw" }`。
+- `agents.defaults.models["provider/*"]` 可以允许某个 provider 动态发现出的所有模型。
+  精确模型配置优先级高于通配项。
+- `models.providers.<provider>.localService` 可以让 OpenClaw 在请求本地模型前先探测/启动本地服务。
+  完整说明看 [Local model services](/tutorials/gateway/local-model-services)。
+
+::: warning Runtime 不再放在整个 Agent 上
+不要再依赖 `agents.defaults.agentRuntime`、`agents.list[].agentRuntime` 或
+`OPENCLAW_AGENT_RUNTIME`。新版 runtime 策略放在 provider 或 model 上。
+旧配置请运行 `openclaw doctor --fix` 清理。
+:::
 
 ### 提供商示例
 

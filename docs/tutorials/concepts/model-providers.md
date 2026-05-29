@@ -45,13 +45,13 @@ OpenClaw 附带 pi-ai 目录。这些提供商 **不需要** `models.providers` 
 ### OpenAI
 
 - 提供商：`openai`
-- 认证：`OPENAI_API_KEY`
-- 示例模型：`openai/gpt-5.1-codex`
+- 认证：`OPENAI_API_KEY` 或 Codex OAuth 登录资料
+- 示例模型：`openai/gpt-5.5`
 - CLI：`openclaw onboard --auth-choice openai-api-key`
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai/gpt-5.1-codex" } } },
+  agents: { defaults: { model: { primary: "openai/gpt-5.5" } } },
 }
 ```
 
@@ -68,18 +68,23 @@ OpenClaw 附带 pi-ai 目录。这些提供商 **不需要** `models.providers` 
 }
 ```
 
-### OpenAI Code (Codex)
+### OpenAI Codex 订阅登录
 
-- 提供商：`openai-codex`
-- 认证：OAuth (ChatGPT)
-- 示例模型：`openai-codex/gpt-5.3-codex`
+- 模型路线：仍然使用 `openai/gpt-5.5`
+- 认证资料：`openai-codex` OAuth (ChatGPT/Codex)
+- 说明：`openai-codex/*` 是旧模型引用，新配置不要这样写
 - CLI：`openclaw onboard --auth-choice openai-codex` 或 `openclaw models auth login --provider openai-codex`
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai-codex/gpt-5.3-codex" } } },
+  agents: { defaults: { model: { primary: "openai/gpt-5.5" } } },
 }
 ```
+
+::: tip 不要被名字绕晕
+`openai` 是模型提供商前缀，`openai-codex` 是 Codex OAuth 登录资料/旧配置命名。
+如果你的旧配置里还有 `openai-codex/gpt-*`，先运行 `openclaw doctor --fix`。
+:::
 
 ### OpenCode Zen
 

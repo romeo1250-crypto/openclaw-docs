@@ -75,7 +75,7 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 
     在 Linux（包括 WSL）上，安装 Node.js **之前**，脚本会自动预装原生编译工具链（`make`、`g++`、`cmake`、`python3`），避免后续 npm 原生模块安装失败。macOS 会跳过这一步。
 
-  ### 步骤 3：确保 Node.js 24（或兼容的 22.14+）
+  ### 步骤 3：确保 Node.js 24（或兼容的 22.19+）
 
     检查 Node 版本，如需安装会优先准备 Node 24（macOS 上使用 Homebrew，Linux 上使用 NodeSource 设置脚本，适用于 apt/dnf/yum）。
 
@@ -277,7 +277,7 @@ curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install-cli.sh | bash 
 
     需要 PowerShell 5+。
 
-  ### 步骤 11：确保 Node.js 24（或兼容的 22.14+）
+  ### 步骤 11：确保 Node.js 24（或兼容的 22.19+）
 
     如果缺失，依次尝试通过 winget、Chocolatey、Scoop 安装。
 

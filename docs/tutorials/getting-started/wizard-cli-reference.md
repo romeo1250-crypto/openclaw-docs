@@ -157,7 +157,8 @@ description: "OpenClaw 快速入门：CLI 入门引导参考。本页面是  的
 
 ::: details OpenAI Code 订阅（Codex CLI 复用）
 
-    如果 `~/.codex/auth.json` 存在，向导可以复用它。
+    新版 OpenClaw 不再把 `~/.codex/auth.json` 当作主要导入来源。
+    推荐直接走 OpenClaw 自己的 Codex OAuth 登录，让凭据进入 OpenClaw 的认证存储。
 
 
 :::
@@ -166,7 +167,8 @@ description: "OpenClaw 快速入门：CLI 入门引导参考。本页面是  的
 
     浏览器流程；粘贴 `code#state`。
 
-    当模型未设置或为 `openai/*` 时，将 `agents.defaults.model` 设置为 `openai-codex/gpt-5.3-codex`。
+    当模型未设置或需要修正时，将 `agents.defaults.model` 设置为 `openai/gpt-5.5`。
+    `openai-codex` 仍然是登录资料/旧配置命名，但新模型引用不要写成 `openai-codex/gpt-*`。
 
 
 
@@ -177,7 +179,7 @@ description: "OpenClaw 快速入门：CLI 入门引导参考。本页面是  的
     如果存在 `OPENAI_API_KEY` 则使用该值，否则提示输入密钥，然后保存到
     `~/.openclaw/.env` 以便 launchd 读取。
 
-    当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，将 `agents.defaults.model` 设置为 `openai/gpt-5.1-codex`。
+    当模型未设置、为 `openai/*` 或旧的 `openai-codex/*` 时，将 `agents.defaults.model` 设置为 `openai/gpt-5.5`。
 
 
 

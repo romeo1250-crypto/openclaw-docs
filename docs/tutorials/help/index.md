@@ -69,7 +69,7 @@ openclaw doctor
 node -v
 ```
 
-当前 OpenClaw 推荐 Node 24，至少需要 Node 22.14+。
+当前 OpenClaw 推荐 Node 24，至少需要 Node 22.19+。
 如果 Node 版本太旧，很多奇怪问题都会出现。
 
 ### 2. 再看网关

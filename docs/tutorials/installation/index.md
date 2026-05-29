@@ -37,7 +37,7 @@ Windows 可以直接用 PowerShell 安装；如果你后面要做更完整的开
 官方当前推荐：
 
 - **Node 24**：推荐版本
-- **Node 22.14+**：兼容版本
+- **Node 22.19+**：兼容版本
 
 检查命令：
 
@@ -65,6 +65,10 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 
 这个脚本会帮你处理安装细节。新手不用纠结 npm、pnpm、路径这些问题。
 
+它还会帮你绕开一些新手很难发现的问题。例如有些电脑的 npm 配了
+`min-release-age` 这类“新包先等等再装”的策略，直接 `npm install -g`
+可能装不到最新 OpenClaw；官网安装脚本会在安装 OpenClaw 这个包时清掉这类新鲜度限制。
+
 ---
 
 ## 方法二：用 npm 安装
@@ -78,6 +82,22 @@ openclaw onboard --install-daemon
 ```
 
 第二行很重要。它会启动新手向导，并把 Gateway 装成后台服务。
+
+::: warning 手动 npm 安装会遵守你自己的 npm 策略
+如果公司电脑、CI 或旧环境里配置过 npm 镜像、代理、缓存策略、`min-release-age`，
+手动 npm 安装可能会比官网脚本更容易遇到“装的不是最新版本”或“包暂时不可见”。
+遇到这种情况，不要反复删配置，先改用上面的一键安装脚本。
+:::
+
+### 想直接安装 GitHub main？
+
+如果你明确要跟官方仓库 `main` 分支，而不是 npm 最新稳定包，用官网安装脚本指定 git 安装：
+
+```bash
+curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git --version main
+```
+
+这条命令适合测试最新版修复。普通用户仍然建议用默认脚本或 npm 稳定版。
 
 ---
 
