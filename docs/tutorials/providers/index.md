@@ -109,6 +109,8 @@ API Key 不要发到群里，不要写进公开仓库，也不要贴到截图里
 - [Mistral](/tutorials/providers/mistral)：Mistral 系列模型
 - [Groq](/tutorials/providers/groq)：高速推理
 - [Cerebras](/tutorials/providers/cerebras)：高速推理服务
+- [GMI Cloud](/tutorials/providers/gmi)：一个账号访问多家托管模型路线
+- [NovitaAI](/tutorials/providers/novita)：托管开源和第三方模型路线
 
 ---
 
@@ -116,6 +118,7 @@ API Key 不要发到群里，不要写进公开仓库，也不要贴到截图里
 
 - [Moonshot / Kimi](/tutorials/providers/moonshot)
 - [通义千问 Qwen](/tutorials/providers/qwen)
+- [Qwen OAuth / Portal](/tutorials/providers/qwen-oauth)：旧版 Portal/OAuth 凭证迁移入口
 - [GLM 智谱](/tutorials/providers/glm)
 - [DeepSeek](/tutorials/providers/deepseek)
 - [MiniMax](/tutorials/providers/minimax)
@@ -137,6 +140,7 @@ API Key 不要发到群里，不要写进公开仓库，也不要贴到截图里
 它更可控，但也更像自己在家照顾一台机器：要关心模型文件、内存、显卡和服务是否在线。
 
 - [Ollama](/tutorials/providers/ollama)：最容易上手的本地模型方式
+- [Ollama Cloud](/tutorials/providers/ollama-cloud)：不运行本地 Ollama 服务，直接调用 Ollama 托管模型
 - [vLLM](/tutorials/providers/vllm)：适合服务器和高性能推理
 - [SGLang](/tutorials/providers/sglang)：自托管推理服务路线
 - [LM Studio](/tutorials/providers/lmstudio)：桌面本地模型入口

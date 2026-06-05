@@ -1,92 +1,111 @@
-# Publishing on ClawHub
+---
+title: "ClawHub 发布"
+sidebarTitle: "ClawHub 发布"
+description: "OpenClaw 工具系统：ClawHub 发布流程、owner scope、技能和插件包命名规则。"
+---
 
-::: tip 先看人话
-这页用于补齐 OpenClaw 官方最新文档里的新增内容。先按命令和字段原样理解；如果你只是普通用户，优先看本页的标题、小节和示例命令，不需要一口气读完所有维护者细节。
-:::
+# ClawHub 发布
 
-ClawHub publishing is owner-scoped: every publish targets a publisher, and the
-server decides whether the signed-in user is allowed to publish there.
+ClawHub 发布是 owner-scoped 的：每次发布都要选择一个发布者 owner，服务端会判断当前登录用户是否有权限代表这个 owner 发布。
 
-## Owners
+这页主要给技能和插件作者看。普通用户只安装技能或插件时，优先看 [ClawHub CLI](/tutorials/tools/clawhub)。
 
-An owner is a ClawHub publisher handle, such as `@alice` or `@openclaw`.
-Personal owners are created for users. Org owners can have multiple members.
+---
 
-When you publish, you either use your personal owner or choose an org owner
-where you have publisher access.
+## Owner
 
-## Skills
+Owner 是 ClawHub 发布者标识，例如：
 
-Skills are published from a skill folder. The public page is:
+```text
+@alice
+@openclaw
+```
+
+个人 owner 属于单个用户；组织 owner 可以有多个成员。发布时，你要么使用自己的个人 owner，要么选择一个你拥有发布权限的组织 owner。
+
+---
+
+## 发布技能
+
+技能从一个 skill 文件夹发布。公开页面形如：
 
 ```text
 https://clawhub.ai/<owner>/<slug>
 ```
 
-Example:
+示例：
 
 ```text
 https://clawhub.ai/alice/review-helper
 ```
 
-The publish request includes the selected owner, slug, version, changelog, and
-files. The server verifies that the actor can publish as that owner before it
-creates the release.
+发布请求会包含 owner、slug、version、changelog 和文件列表。ClawHub 服务端会先验证当前用户是否能代表该 owner 发布，再创建 release。
 
-## Plugins
+常用命令：
 
-Plugins use npm-style package names. Scoped package names include the owner in
-the first part of the name:
+```bash
+clawhub skill publish ./skills/review-helper
+clawhub skill publish ./skills/review-helper --version 1.0.0
+```
+
+---
+
+## 发布插件
+
+插件使用 npm 风格包名。带 scope 的包名第一段要和发布 owner 对应：
 
 ```text
 @owner/package-name
 ```
 
-The scope must match the selected publish owner. If your package is named
-`@openclaw/dronzer`, it can only be published as `@openclaw`. If you publish as
-`@vintageayu`, rename the package to `@vintageayu/dronzer`.
+例如包名是 `@openclaw/dronzer`，它只能作为 `@openclaw` 发布。如果你想作为 `@vintageayu` 发布，就需要把包名改成：
 
-This prevents a package from claiming an org namespace that the publisher does
-not control.
+```text
+@vintageayu/dronzer
+```
 
-## Release Flow
+这样可以防止插件包冒用不属于自己的组织 namespace。
 
-1. The UI, CLI, or GitHub workflow gathers package metadata and files.
-2. The publish request is sent to ClawHub with the selected owner.
-3. The server validates owner permissions, package scope, package name, version,
-   file limits, and source metadata.
-4. ClawHub stores the release and starts automated security checks.
-5. New releases are hidden from normal install/download surfaces until review
-   and verification finish.
+常用命令：
 
-If validation fails, the release is not created.
+```bash
+clawhub package publish your-org/your-plugin --dry-run
+clawhub package publish your-org/your-plugin
+clawhub package publish your-org/your-plugin@v1.0.0
+```
 
-## FAQ
+---
 
-### Package scope must match selected owner
+## Release 流程
 
-If the package scope and selected owner do not match, ClawHub rejects the
-publish:
+1. UI、CLI 或 GitHub Workflow 收集包元数据和文件。
+2. 发布请求带着选中的 owner 发到 ClawHub。
+3. 服务端验证 owner 权限、包 scope、包名、版本、文件限制和 source metadata。
+4. ClawHub 保存 release，并启动自动安全检查。
+5. 新 release 在审核和验证完成前，不会出现在普通安装/下载入口。
+
+如果验证失败，release 不会创建。
+
+---
+
+## 常见错误：scope 和 owner 不一致
+
+如果包 scope 和选中的 owner 不一致，ClawHub 会拒绝发布，例如：
 
 ```text
 Package scope "@openclaw" must match selected owner "@vintageayu".
 Publish as "@openclaw" or rename this package to "@vintageayu/dronzer".
 ```
 
-To fix it, either choose the owner named by the package scope, or rename the
-package so the scope matches the owner you can publish as.
+修复方式：
 
-If the package name already has the right scope but the package is owned by the
-wrong publisher, transfer ownership instead:
+- 选择和包 scope 一致的 owner 发布。
+- 或把包名改成当前 owner 对应的 scope。
 
-```sh
+如果包名 scope 已经正确，但包归属在错误 publisher 下，可以转移所有权：
+
+```bash
 clawhub package transfer @opik/opik-openclaw --to opik
 ```
 
-Use package transfer only when you have admin access to both the current package
-owner and the destination publisher. It does not let you publish into a scope you
-cannot manage.
-
-This protects org namespaces. A package named `@openclaw/dronzer` claims the
-`@openclaw` namespace, so only publishers with access to the `@openclaw` owner
-can publish it.
+只有你同时拥有当前包 owner 和目标 owner 的管理权限时，才能转移。转移命令不能绕过 namespace 权限。

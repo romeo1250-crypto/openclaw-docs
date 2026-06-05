@@ -50,6 +50,7 @@ OpenClaw 里的“通道”就是聊天入口。
 | [Discord](/tutorials/channels/discord) | 简单 | 社区、服务器、私信 |
 | [Slack](/tutorials/channels/slack) | 中等 | 工作空间 |
 | [WhatsApp](/tutorials/channels/whatsapp) | 中等 | 手机日常聊天 |
+| [SMS / Twilio](/tutorials/channels/sms) | 中等 | 手机短信入口 |
 | [Google Chat](/tutorials/channels/googlechat) | 中等 | Google Workspace |
 | [Signal](/tutorials/channels/signal) | 中等 | 隐私优先 |
 | [BlueBubbles iMessage](/tutorials/channels/bluebubbles) | 较复杂 | 更推荐的 iMessage 路线 |

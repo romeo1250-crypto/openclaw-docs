@@ -42,6 +42,8 @@ sidebarTitle: "工具系统"
 | [Canvas 画布](/tutorials/tools/canvas) | 在节点上展示可视化界面 | 手机/桌面交互、远程展示 |
 | [Image Generate 图像生成](/tutorials/tools/image-generate) | 生成图片 | 配图、草图、视觉素材 |
 | [Loop Detection 循环检测](/tutorials/tools/loop-detection) | 发现无意义重复 | 防止 Agent 卡住反复调用 |
+| [Goal 会话目标](/tutorials/tools/goal) | 固定当前会话目标 | 长任务、PR 收尾、文档更新 |
+| [权限模式](/tutorials/tools/permission-modes) | 控制命令和写入审批 | 调整 Agent 主机权限 |
 
 ---
 
@@ -52,6 +54,7 @@ sidebarTitle: "工具系统"
 
 - [技能 Skills](/tutorials/tools/skills)：给 Agent 加一份专门说明书，比如“写周报时按这个格式”
 - [创建技能](/tutorials/tools/creating-skills)：把经验沉淀成可复用能力
+- [Skill Workshop](/tutorials/tools/skill-workshop)：用提案和审批流程创建或更新 workspace skill
 - [子智能体 Subagents](/tutorials/tools/subagents)：把一个大任务拆给多个 Agent
 - [斜杠命令](/tutorials/tools/slash-commands)：用短命令触发固定动作
 - [BTW 临时问题](/tutorials/tools/btw)：问旁支问题，不污染主会话
@@ -59,6 +62,7 @@ sidebarTitle: "工具系统"
 - [ACP Agents](/tutorials/tools/acp-agents)：把外部编码 harness 接进 OpenClaw
 - [ACP 设置](/tutorials/tools/acp-agents-setup)：配置 acpx、权限和外部 CLI
 - [Agent Send CLI](/tutorials/tools/agent-send)：从命令行把消息发给 Agent
+- [ClawHub](/tutorials/tools/clawhub)：搜索、安装、更新和发布 ClawHub 技能/插件
 - [插件专题](/tutorials/plugins/)：通过 `openclaw.plugin.json` 声明和注册新能力
 - [Tokenjuice](/tutorials/tools/tokenjuice)：压短 noisy 命令输出
 - [轨迹导出](/tutorials/tools/trajectory)：导出会话飞行记录

@@ -1,134 +1,98 @@
 ---
-title: "ClawHub 工具中心"
+title: "ClawHub CLI"
 sidebarTitle: "ClawHub"
-description: "OpenClaw 工具系统：ClawHub 工具中心（ClawHub）。ClawHub 是 OpenClaw 的官方技能和工具市场，汇聚了社区贡献的技能包（Skills）。你可以在这里搜索、安装、管…"
+description: "OpenClaw 工具系统：通过 OpenClaw CLI 搜索、安装、更新 ClawHub 技能和插件；通过独立 clawhub CLI 完成发布者流程。"
 ---
 
-# ClawHub 工具中心（ClawHub）
+# ClawHub CLI
 
-ClawHub 是 OpenClaw 的官方技能和工具市场，汇聚了社区贡献的技能包（Skills）。你可以在这里搜索、安装、管理各种扩展能力，无需从零开发。
+ClawHub 是 OpenClaw 的技能和插件分发中心。现在有两类命令入口：
+
+- `openclaw skills` 和 `openclaw plugins`：在本地 OpenClaw Agent 或 Gateway 里搜索、安装、更新和验证 ClawHub 包。
+- 独立的 `clawhub` CLI：给发布者使用，处理登录、发布、转移和同步等维护流程。
+
+如果你只是普通用户，优先使用 `openclaw skills` 和 `openclaw plugins`。只有要发布技能或插件时，才需要安装独立 `clawhub` CLI。
 
 ---
 
-## 快速开始
+## 搜索和安装
+
+安装技能：
 
 ```bash
-# 搜索技能包
-openclaw clawhub search "代码审查"
-
-# 安装技能包
-openclaw clawhub install code-review
-
-# 查看已安装的技能包
-openclaw clawhub list
-
-# 更新技能包
-openclaw clawhub update code-review
-
-# 删除技能包
-openclaw clawhub remove code-review
+openclaw skills search "calendar"
+openclaw skills install <slug>
+openclaw skills update <slug>
+openclaw skills verify <slug>
 ```
 
----
-
-## ClawHub 是什么？
-
-ClawHub 是一个社区驱动的技能生态系统，类似于 npm 之于 Node.js 生态。任何人都可以将自己编写的技能包发布到 ClawHub，供其他用户使用。
-
-::: info 技能包包含什么？
-- **工具定义**：扩展 Agent 可以调用的工具
-- **提示模板**：针对特定任务优化的 System Prompt
-- **工作流模板**：多步骤任务的执行流程
-- **配置预设**：常见场景的推荐配置
-:::
-
----
-
-## 常见工作流
-
-**第一步：搜索你需要的技能**
+技能默认安装到当前 workspace 的 `skills/` 目录。需要装到共享 managed skills 目录时，加 `--global`：
 
 ```bash
-openclaw clawhub search "数据分析"
+openclaw skills install <slug> --global
 ```
 
-输出示例：
-```text
-找到 3 个匹配的技能包：
-- data-analyst    ★4.8  数据分析与可视化技能包
-- sql-helper      ★4.5  SQL 查询辅助工具
-- chart-maker     ★4.2  图表自动生成
-```
-
-**第二步：预览技能包详情**
+安装插件：
 
 ```bash
-openclaw clawhub info data-analyst
+openclaw plugins search "calendar"
+openclaw plugins install clawhub:<package>
+openclaw plugins update <id-or-npm-spec>
 ```
 
-**第三步：安装并配置**
+`clawhub:` 前缀表示通过 ClawHub 解析，而不是走 npm 或其他安装源。
+
+---
+
+## 发布和维护
+
+发布者工作流使用独立 `clawhub` CLI：
 
 ```bash
-openclaw clawhub install data-analyst
+npm i -g clawhub
+clawhub login
 ```
 
-安装后，在配置文件中启用该技能：
+发布插件包：
 
-```json5
-{
-  skills: {
-    enabled: ["data-analyst"]
-  }
-}
+```bash
+clawhub package publish your-org/your-plugin --dry-run
+clawhub package publish your-org/your-plugin
+clawhub package publish your-org/your-plugin@v1.0.0
+```
+
+发布技能目录：
+
+```bash
+clawhub skill publish ./skills/review-helper
+clawhub skill publish ./skills/review-helper --version 1.0.0
+```
+
+维护本地扫描状态或包所有权：
+
+```bash
+clawhub sync --all
+clawhub package transfer @old-owner/package --to new-owner
 ```
 
 ---
 
-## 安全与审核（Moderation）
+## 常见区别
 
-::: warning 安装前请确认
-- ClawHub 对所有提交的技能包进行自动安全扫描
-- 社区认证（Verified）的技能包经过人工审核，安全性更高
-- 安装来源不明的技能包前，请先查看其源码和权限申请
-:::
-
-技能包的信任级别：
-
-| 标识 | 说明 |
-|------|------|
-| Verified | 官方或社区人工审核通过 |
-| Community | 社区贡献，自动扫描通过 |
-| Unverified | 未经审核，谨慎安装 |
+| 你要做什么 | 用哪个命令 |
+|------------|------------|
+| 搜索并安装技能 | `openclaw skills search/install` |
+| 更新或验证本地技能 | `openclaw skills update/verify` |
+| 搜索并安装插件 | `openclaw plugins search/install` |
+| 发布技能或插件 | `clawhub skill publish` / `clawhub package publish` |
+| 转移包所有权 | `clawhub package transfer` |
 
 ---
 
-## 高级功能
+## 相关页面
 
-::: details 依赖管理与版本锁定
-
-技能包之间可以有依赖关系，安装时会自动解析：
-
-```bash
-# 安装指定版本
-openclaw clawhub install code-review@2.1.0
-
-# 查看依赖树
-openclaw clawhub deps code-review
-```
-
-版本锁定文件位于：`~/.openclaw/clawhub.lock`，建议将其加入版本控制，确保团队使用相同版本。
-:::
-
-::: details 影响 ClawHub 行为的环境变量
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `CLAWHUB_REGISTRY` | 自定义 ClawHub 镜像地址 | 官方源 |
-| `CLAWHUB_CACHE_DIR` | 技能包缓存目录 | `~/.openclaw/cache` |
-| `CLAWHUB_TIMEOUT` | 下载超时时间（秒） | `30` |
-| `CLAWHUB_PROXY` | 代理服务器地址 | 无 |
-:::
-
----
-
-_下一步：[工具系统总览](/tutorials/tools/)_
+- [技能系统](/tutorials/tools/skills)
+- [创建技能](/tutorials/tools/creating-skills)
+- [管理插件](/tutorials/plugins/manage-plugins)
+- [构建插件](/tutorials/plugins/building-plugins)
+- [ClawHub 发布](/tutorials/tools/clawhub-publishing)
